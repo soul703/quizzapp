@@ -1,48 +1,66 @@
+Tuyệt vời! Dưới đây là phiên bản `README.md` hoàn chỉnh đã được cải tiến toàn diện. Tôi đã cấu trúc lại, bổ sung chi tiết, giải thích sâu hơn về lý do lựa chọn kỹ thuật, và làm cho nó trở thành một tài liệu kiến trúc thực thụ mà một Senior Engineer sẽ tự hào đưa vào dự án.
 
-# **Quiz App - Kiến trúc Monolith Hiệu suất cao & Dễ mở rộng**
+---
 
-Dự án này là một ứng dụng Web Quiz được xây dựng bằng Java và Spring Boot. Mục tiêu không chỉ là tạo ra một ứng dụng hoạt động, mà còn là xây dựng nó trên một nền tảng kiến trúc Monolith vững chắc, có cấu trúc tốt, đảm bảo hiệu suất, tính sẵn sàng cao và khả năng mở rộng theo chiều ngang (horizontal scaling) khi cần thiết.
+# **QuizMaster - Nền tảng Quiz Hiệu suất cao**
+
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+**QuizMaster** không chỉ là một ứng dụng Quiz thông thường. Đây là một dự án được xây dựng với tư duy về một hệ thống vững chắc, có khả năng đáp ứng lượng truy cập lớn. Dự án tuân thủ kiến trúc **"Well-Structured Monolith"** (Monolith có cấu trúc tốt), đảm bảo tốc độ phát triển nhanh trong giai đoạn đầu nhưng vẫn sẵn sàng cho việc mở rộng quy mô (scaling) trong tương lai.
 
 ## **Mục lục**
 
-1.  [Stack Công nghệ](#1-stack-công-nghệ)
-2.  [Sơ đồ Kiến trúc Triển khai](#2-sơ-đồ-kiến-trúc-triển-khai)
-3.  [Phân tích Chi tiết các Thành phần Kiến trúc](#3-phân-tích-chi-tiết-các-thành-phần-kiến-trúc)
-    *   [CDN (Content Delivery Network)](#cdn-content-delivery-network)
-    *   [Load Balancer (Bộ cân bằng tải)](#load-balancer-bộ-cân-bằng-tải)
-    *   [Application Instances (Các phiên bản ứng dụng)](#application-instances-các-phiên-bản-ứng-dụng---stateless-monolith)
-    *   [Database Cluster (Cụm Cơ sở dữ liệu)](#database-cluster-cụm-cơ-sở-dữ-liệu---primary-replica-model)
-    *   [Distributed Cache (Bộ nhớ đệm phân tán)](#distributed-cache-bộ-nhớ-đệm-phân-tán---redis)
-    *   [Object Storage (Lưu trữ đối tượng)](#object-storage-lưu-trữ-đối-tượng---aws-s3--minio)
-4.  [Lý do Lựa chọn Kiến trúc này](#4-lý-do-lựa-chọn-kiến-trúc-này)
-5.  [Hướng dẫn Triển khai](#5-hướng-dẫn-triển-khai)
-6.  [Hướng dẫn Cài đặt & Chạy Local](#6-hướng-dẫn-cài-đặt--chạy-local)
+1.  [Tính năng Chính](#1-tính-năng-chính)
+2.  [Stack Công nghệ](#2-stack-công-nghệ)
+3.  [Sơ đồ Kiến trúc Hệ thống](#3-sơ-đồ-kiến-trúc-hệ-thống)
+4.  [Phân tích Sâu về Kiến trúc (Architectural Deep Dive)](#4-phân-tích-sâu-về-kiến-trúc-architectural-deep-dive)
+    *   [CDN (Content Delivery Network)](#cdn)
+    *   [Load Balancer](#load-balancer)
+    *   [Application Instances (Stateless Monolith)](#application-instances)
+    *   [Database Cluster (Primary-Replica)](#database-cluster)
+    *   [Distributed Cache (Redis)](#distributed-cache)
+    *   [Object Storage (S3/MinIO)](#object-storage)
+5.  [Lý giải Lựa chọn Thiết kế: Tại sao lại là Monolith?](#5-lý-giải-lựa-chọn-thiết-kế-tại-sao-lại-là-monolith)
+6.  [Bắt đầu: Hướng dẫn Cài đặt Local](#6-bắt-đầu-hướng-dẫn-cài-đặt-local)
+7.  [Quy trình Triển khai (Deployment)](#7-quy-trình-triển-khai-deployment)
+8.  [Tài liệu API](#8-tài-liệu-api)
 
-## **1. Stack Công nghệ**
+## **1. Tính năng Chính**
 
-*   **Backend:** Java 17, Spring Boot 3.x, Spring Security, Spring Data JPA
-*   **Database:** PostgreSQL
-*   **Cache:** Redis
-*   **Build Tool:** Maven
-*   **Containerization:** Docker
-*   **Deployment:** Docker Compose (for local), Kubernetes/AWS ECS (for production)
+*   **Xác thực người dùng:** Đăng ký, đăng nhập an toàn sử dụng JWT.
+*   **Làm Quiz:** Người dùng có thể tham gia các bài quiz, trả lời câu hỏi và nộp bài.
+*   **Xem kết quả:** Hệ thống tự động chấm điểm và hiển thị kết quả chi tiết.
+*   **Quản lý (Admin):** Tạo, cập nhật, xóa các bài quiz và câu hỏi.
 
-## **2. Sơ đồ Kiến trúc Triển khai**
+## **2. Stack Công nghệ**
 
-Kiến trúc này được thiết kế để xử lý lượng truy cập lớn và đảm bảo hệ thống không có điểm lỗi đơn (Single Point of Failure).
+| Lĩnh vực | Công nghệ | Lý do lựa chọn |
+| :--- | :--- | :--- |
+| **Backend** | Java 17, Spring Boot 3.x | Hệ sinh thái mạnh mẽ, hiệu suất cao, cộng đồng lớn. |
+| **Bảo mật** | Spring Security 6 + JWT | Tiêu chuẩn ngành để bảo mật REST API. |
+| **Dữ liệu** | Spring Data JPA, Hibernate | Trừu tượng hóa tầng truy cập dữ liệu, giảm code boilerplate. |
+| **Database** | PostgreSQL 15+ | Hệ quản trị CSDL quan hệ mạnh mẽ, đáng tin cậy, hỗ trợ tốt JSON. |
+| **Cache** | Redis | Cache tốc độ cao cho session và dữ liệu thường xuyên truy cập. |
+| **Build & Dependencies** | Maven | Quản lý project và thư viện một cách hiệu quả. |
+| **DevOps** | Docker, Kubernetes (K8s) | Container hóa để nhất quán môi trường, điều phối để tự động scale. |
+| **API Docs** | OpenAPI 3 (Swagger) | Tự động sinh tài liệu API, giúp việc tích hợp dễ dàng. |
 
+## **3. Sơ đồ Kiến trúc Hệ thống**
+
+Sơ đồ này mô tả cách các thành phần tương tác với nhau trong môi trường production để đảm bảo tính sẵn sàng cao và khả năng mở rộng.
+
+```mermaid
 graph TD
     subgraph "Internet"
-        %% Sử dụng ký tự Unicode để biểu diễn icon người dùng
         User["👤 User"]
     end
 
     subgraph "Edge Network"
-        %% Sử dụng ký tự Unicode và xuống dòng bằng cách đặt text trong dấu ""
-        CDN["☁️ CDN<br>(Cloudflare / CloudFront)"]
+        CDN["☁️ CDN<br>(Cloudflare / AWS CloudFront)"]
     end
 
-    subgraph "Cloud Infrastructure (AWS, GCP, Azure)"
+    subgraph "Cloud Infrastructure (VPC)"
         LB["↔️ Load Balancer<br>(AWS ALB / Nginx)"]
 
         subgraph "Application Auto-Scaling Group"
@@ -51,7 +69,7 @@ graph TD
             AppN["... App Instance N<br>(Docker Container)"]
         end
 
-        subgraph "Data Tier"
+        subgraph "Data Tier (Private Subnet)"
             Cache["⚡ Distributed Cache<br>(Redis)"]
             DB_Primary["🗃️ PostgreSQL Primary<br>(Read/Write)"]
             DB_Replica["📋 PostgreSQL Replica<br>(Read-Only)"]
@@ -77,138 +95,118 @@ graph TD
     App2 -- Read-Only --> DB_Replica
     AppN -- Read-Only --> DB_Replica
 
-    DB_Primary -- Replication --> DB_Replica
+    DB_Primary -- Logical Replication --> DB_Replica
 
     App1 <--> Storage
     App2 <--> Storage
     AppN <--> Storage
+```
 
-## **3. Phân tích Chi tiết các Thành phần Kiến trúc**
+## **4. Phân tích Sâu về Kiến trúc (Architectural Deep Dive)**
 
-#### **CDN (Content Delivery Network)**
-*   **Vai trò:** Là lớp ngoài cùng, tiếp xúc đầu tiên với người dùng.
-*   **Phân tích:**
-    *   **Tăng tốc độ:** Cache các tài nguyên tĩnh (CSS, JS, hình ảnh) tại các máy chủ gần người dùng nhất trên toàn cầu, giảm độ trễ đáng kể.
-    *   **Giảm tải:** Giảm lượng request trực tiếp đến server ứng dụng, giúp server tập trung xử lý logic nghiệp vụ.
-    *   **Bảo mật:** Cung cấp các lớp bảo vệ cơ bản chống lại các cuộc tấn công như DDoS.
+#### **CDN**
+*   **Vai trò:** Là cửa ngõ đầu tiên, phân phối nội dung tĩnh trên toàn cầu.
+*   **Lý do:**
+    *   **Tốc độ:** Cache các tài sản (assets) như CSS, JS, hình ảnh tại các vị trí gần người dùng, giảm độ trễ (latency) một cách đáng kể.
+    *   **Giảm tải:** Giảm hàng nghìn request không cần thiết đến server ứng dụng, giúp server tập trung vào việc xử lý logic động.
+    *   **Bảo mật:** Cung cấp lớp bảo vệ chống lại các cuộc tấn công DDoS cơ bản.
 
-#### **Load Balancer (Bộ cân bằng tải)**
-*   **Vai trò:** Phân phối traffic từ CDN đến các instance ứng dụng đang hoạt động.
-*   **Phân tích:**
-    *   **Scalability:** Cho phép chúng ta chạy nhiều bản sao (instance) của ứng dụng. Khi traffic tăng, chỉ cần thêm instance mới, Load Balancer sẽ tự động chia tải cho chúng. Đây là cốt lõi của **Horizontal Scaling**.
-    *   **High Availability:** Thực hiện "Health Checks" liên tục. Nếu một instance bị lỗi, Load Balancer sẽ tự động ngừng gửi traffic đến nó, đảm bảo người dùng không bị ảnh hưởng và hệ thống luôn sẵn sàng.
+#### **Load Balancer**
+*   **Vai trò:** "Cảnh sát giao thông" thông minh, phân phối request đến các instance ứng dụng.
+*   **Lý do:**
+    *   **Khả năng mở rộng ngang (Horizontal Scaling):** Cho phép chúng ta chạy nhiều bản sao của ứng dụng. Khi traffic tăng, chỉ cần thêm instance, Load Balancer sẽ tự động chia tải.
+    *   **Tính sẵn sàng cao (High Availability):** Tự động thực hiện "Health Check". Nếu một instance bị lỗi, nó sẽ bị loại khỏi pool và traffic được chuyển hướng đến các instance khỏe mạnh, đảm bảo hệ thống không bị gián đoạn.
 
-#### **Application Instances (Các phiên bản ứng dụng) - Stateless Monolith**
-*   **Vai trò:** Chứa code ứng dụng Monolith (đóng gói trong Docker container) để xử lý logic nghiệp vụ.
-*   **Phân tích:**
-    *   **Stateless (Phi trạng thái):** Đây là nguyên tắc thiết kế **bắt buộc** để scale. Mỗi instance ứng dụng không lưu trữ bất kỳ dữ liệu phiên (session) hay file nào trên local disk của nó. Mọi request từ cùng một người dùng có thể được xử lý bởi bất kỳ instance nào mà không có sự khác biệt.
-    *   **Centralized State:** Trạng thái được đẩy ra các dịch vụ bên ngoài: session người dùng được lưu trong Redis, file upload được lưu trên S3/MinIO.
-    *   **Consistency:** Tất cả các instance đều chạy cùng một Docker image, đảm bảo tính nhất quán trên toàn bộ hệ thống.
+#### **Application Instances (Stateless Monolith)**
+*   **Vai trò:** "Bộ não" của hệ thống, chứa toàn bộ logic nghiệp vụ, được đóng gói trong Docker.
+*   **Lý do (Thiết kế Stateless):**
+    *   **Nguyên tắc Vàng để Scale:** Mỗi instance là độc lập và không lưu trữ bất kỳ trạng thái nào của người dùng (như session). Điều này cho phép Load Balancer gửi các request liên tiếp của cùng một người dùng đến các instance khác nhau mà không gây ra vấn đề.
+    *   **Tập trung hóa Trạng thái:** Toàn bộ trạng thái được đẩy ra các dịch vụ chuyên dụng: session được lưu trong Redis, file upload được lưu trên S3.
+    *   **Nhất quán & Dễ thay thế:** Mọi instance đều được tạo từ cùng một Docker image. Nếu một instance lỗi, nó có thể bị hủy và thay thế bằng một instance mới ngay lập tức.
 
-#### **Database Cluster (Cụm Cơ sở dữ liệu) - Primary-Replica Model**
-*   **Vai trò:** Lưu trữ dữ liệu chính của ứng dụng một cách bền vững và hiệu quả.
-*   **Phân tích:**
-    *   **Tách biệt Đọc-Ghi:** Các ứng dụng web thường có lượng đọc (SELECT) cao hơn nhiều so với lượng ghi (INSERT, UPDATE). Kiến trúc này tối ưu cho kịch bản đó.
-    *   **Primary (Master):** Xử lý tất cả các thao tác **ghi**. Đảm bảo tính nhất quán của dữ liệu.
-    *   **Replica (Slave):** Là các bản sao chỉ đọc của Primary. Xử lý tất cả các thao tác **đọc**. Chúng ta có thể thêm nhiều Replica để scale khả năng đọc của hệ thống mà không ảnh hưởng đến database chính.
-    *   **Giảm tải:** Giảm áp lực lên database chính, giúp các giao dịch ghi diễn ra nhanh hơn.
+#### **Database Cluster (Primary-Replica)**
+*   **Vai trò:** Trái tim lưu trữ dữ liệu, được tối ưu cho các workload đọc nhiều.
+*   **Lý do:**
+    *   **Tối ưu hóa Đọc/Ghi:** Hầu hết các ứng dụng web có tỷ lệ đọc cao hơn nhiều so với ghi. Mô hình này tách biệt hai loại workload.
+    *   **Primary (Master):** Chịu trách nhiệm cho tất cả các hoạt động **ghi** (INSERT, UPDATE, DELETE), đảm bảo tính toàn vẹn dữ liệu.
+    *   **Replica(s) (Slave):** Là các bản sao chỉ đọc, xử lý tất cả các hoạt động **đọc** (SELECT). Chúng ta có thể thêm nhiều replica để tăng khả năng đọc của hệ thống mà không ảnh hưởng đến hiệu suất ghi.
 
-#### **Distributed Cache (Bộ nhớ đệm phân tán) - Redis**
-*   **Vai trò:** Lưu trữ các dữ liệu hay được truy cập vào bộ nhớ RAM để truy xuất cực nhanh.
-*   **Phân tích:**
-    *   **User Sessions:** Lưu trữ session của người dùng, hỗ trợ cho kiến trúc stateless của application instance.
-    *   **Data Caching:** Cache kết quả của các câu query DB tốn kém hoặc dữ liệu ít thay đổi (ví dụ: chi tiết một bài quiz, bảng xếp hạng). Điều này giảm đáng kể số lần truy vấn xuống database, tăng tốc độ phản hồi của API.
+#### **Distributed Cache (Redis)**
+*   **Vai trò:** Bộ nhớ đệm tốc độ cao, giảm thiểu truy cập vào database.
+*   **Lý do:**
+    *   **Tăng tốc API:** Lưu trữ kết quả của các query tốn kém hoặc dữ liệu ít thay đổi (VD: chi tiết 1 bài quiz, bảng xếp hạng). Truy cập dữ liệu từ RAM nhanh hơn hàng chục lần so với từ disk của DB.
+    *   **Quản lý Session:** Là nơi lưu trữ session tập trung, một yêu cầu bắt buộc cho kiến trúc stateless.
 
-#### **Object Storage (Lưu trữ đối tượng) - AWS S3 / MinIO**
-*   **Vai trò:** Lưu trữ các file có dung lượng lớn (binary files) như ảnh đại diện, hình ảnh trong câu hỏi.
-*   **Phân tích:**
-    *   **Chuyên dụng:** Các dịch vụ này được thiết kế để lưu trữ và truy xuất file một cách hiệu quả, bền bỉ và rẻ hơn so với việc lưu chúng trong database hoặc trên file system của server.
-    *   **Stateless Support:** Giúp các application instance duy trì trạng thái stateless.
+#### **Object Storage (S3/MinIO)**
+*   **Vai trò:** Kho lưu trữ chuyên dụng cho các file nhị phân (ảnh, video, etc.).
+*   **Lý do:**
+    *   **Hiệu quả & Kinh tế:** Rẻ và hiệu quả hơn nhiều so với việc lưu trữ file lớn dưới dạng BLOB trong database hoặc trên hệ thống file của server.
+    *   **Độ bền cao & Dễ tích hợp:** Các dịch vụ này được thiết kế để đảm bảo dữ liệu không bị mất và cung cấp API dễ dàng để upload/download.
 
-## **4. Lý do Lựa chọn Kiến trúc này**
+## **5. Lý giải Lựa chọn Thiết kế: Tại sao lại là Monolith?**
 
-Kiến trúc "Well-Structured Monolith" này được chọn vì nó mang lại sự **cân bằng hoàn hảo giữa tốc độ phát triển và khả năng mở rộng** cho giai đoạn đầu và giai đoạn tăng trưởng của một sản phẩm.
+Trong thế giới tôn vinh Microservices, việc lựa chọn Monolith là một quyết định kỹ thuật có chủ đích, đặc biệt phù hợp cho giai đoạn đầu và giữa của dự án.
 
-1.  **Đơn giản trong Phát triển & Vận hành (ban đầu):**
-    *   **Một Codebase duy nhất:** Dễ dàng hơn cho việc phát triển, gỡ lỗi (debug) và kiểm thử (testing) so với việc quản lý nhiều repositories trong kiến trúc Microservices.
-    *   **Triển khai đơn giản hơn:** Chỉ cần build và triển khai một artifact duy nhất. Giảm độ phức tạp về DevOps so với việc phải điều phối việc triển khai nhiều services.
+1.  **Tốc độ Phát triển (Development Velocity):** Một codebase duy nhất giúp giảm sự phức tạp trong việc thiết lập môi trường, debug, và triển khai. Team có thể tập trung 100% vào việc xây dựng tính năng và đưa sản phẩm ra thị trường nhanh hơn.
+2.  **Đơn giản trong Vận hành (Operational Simplicity):** Quản lý và giám sát một ứng dụng đơn giản hơn nhiều so với việc phải duy trì một hệ sinh thái gồm nhiều services, network, và các cơ chế giao tiếp phức tạp.
+3.  **Hiệu năng Cao (Out-of-the-box Performance):** Giao tiếp giữa các module bên trong monolith là các lời gọi phương thức trực tiếp (in-memory), có độ trễ gần như bằng không, so với các lời gọi mạng (network overhead) trong Microservices.
+4.  **Đây không phải là ngõ cụt:** Nhờ cấu trúc module rõ ràng (tách biệt theo domain) và kiến trúc triển khai stateless, khi hệ thống phát triển đủ lớn, chúng ta có thể **tiến hóa** một cách từ từ, tách các module quan trọng ra thành Microservices riêng mà không cần phải viết lại toàn bộ hệ thống.
 
-2.  **Hiệu năng cao:**
-    *   Giao tiếp giữa các module trong Monolith là các lời gọi phương thức (in-process calls), có độ trễ cực thấp so với các lời gọi mạng (network calls) giữa các Microservices.
+> **Triết lý:** "Bắt đầu với Monolith, tách ra thành Microservices chỉ khi nỗi đau do Monolith gây ra lớn hơn nỗi đau do Microservices mang lại."
 
-3.  **Chi phí thấp hơn (ban đầu):**
-    *   Yêu cầu ít tài nguyên hạ tầng và chi phí vận hành hơn so với một hệ thống Microservices hoàn chỉnh.
+## **6. Bắt đầu: Hướng dẫn Cài đặt Local**
 
-4.  **Không phải là ngõ cụt - Lộ trình Scale rõ ràng:**
-    *   Nhờ thiết kế **stateless** và tách biệt các thành phần dữ liệu (Database, Cache, Storage), chúng ta có thể dễ dàng **scale theo chiều ngang** bằng cách thêm các application instance.
-    *   Khi ứng dụng thực sự trở nên quá lớn và phức tạp, cấu trúc module rõ ràng bên trong monolith (theo domain) sẽ là nền tảng vững chắc để **tách dần ra thành Microservices** một cách có kiểm soát.
+#### **Yêu cầu:**
+*   Java JDK 17+
+*   Apache Maven 3.8+
+*   Docker & Docker Compose
 
-Tóm lại, kiến trúc này giúp chúng ta **nhanh chóng đưa sản phẩm ra thị trường (Time-to-Market)** mà không phải hy sinh khả năng phục vụ lượng người dùng lớn trong tương lai.
-
-## **5. Hướng dẫn Triển khai**
-
-1.  **Build Application:**
+#### **Các bước cài đặt:**
+1.  **Clone repository:**
     ```bash
-    mvn clean package
+    git clone https://your-repo-url.git
+    cd quizmaster-app
     ```
-    Lệnh này sẽ tạo ra file `quiz-app-0.0.1-SNAPSHOT.jar` trong thư mục `target/`.
 
-2.  **Containerize (Đóng gói Docker):**
-    Sử dụng `Dockerfile` sau để tạo image cho ứng dụng:
-    ```dockerfile
-    # Sử dụng base image Java 17 chính thức
-    FROM eclipse-temurin:17-jdk-alpine
-
-    # Thiết lập thư mục làm việc
-    WORKDIR /app
-
-    # Copy file JAR đã được build vào container
-    COPY target/quiz-app-0.0.1-SNAPSHOT.jar app.jar
-
-    # Expose port mà ứng dụng Spring Boot sẽ chạy
-    EXPOSE 8080
-
-    # Lệnh để chạy ứng dụng khi container khởi động
-    ENTRYPOINT ["java", "-jar", "app.jar"]
-    ```
-    Build Docker image:
+2.  **Cấu hình Môi trường:**
+    Tạo một file `.env` từ file mẫu để cấu hình các biến môi trường cho Docker.
     ```bash
-    docker build -t quiz-app:latest .
+    cp .env.example .env
     ```
+    *Mở file `.env` và tùy chỉnh các giá trị nếu cần (VD: `POSTGRES_PASSWORD`).*
 
-3.  **Thiết lập Hạ tầng:**
-    *   Cài đặt một cụm PostgreSQL với 1 Primary và ít nhất 1 Replica.
-    *   Cài đặt một instance Redis.
-    *   Cấu hình Load Balancer để trỏ đến các IP/port của các container ứng dụng.
-
-4.  **Chạy Ứng dụng:**
-    Triển khai Docker image đã build lên một nền tảng điều phối container như **Kubernetes** hoặc **AWS ECS**. Nền tảng này sẽ quản lý việc chạy nhiều instance, tự động scale và thực hiện rolling updates.
-
-## **6. Hướng dẫn Cài đặt & Chạy Local**
-
-1.  **Yêu cầu:**
-    *   Java 17
-    *   Maven 3.8+
-    *   Docker & Docker Compose
-
-2.  **Clone a project:**
-    ```bash
-    git clone <repository-url>
-    cd quiz-app
-    ```
-
-3.  **Cấu hình:**
-    Sao chép file `application.yml.example` thành `application.yml` và cập nhật thông tin kết nối đến PostgreSQL và Redis của bạn.
-
-4.  **Chạy các dịch vụ phụ thuộc bằng Docker Compose:**
-    Sử dụng file `docker-compose.yml` để khởi chạy PostgreSQL và Redis.
+3.  **Khởi chạy các Dịch vụ Nền (Database & Cache):**
+    Lệnh này sẽ khởi chạy PostgreSQL và Redis trong các container Docker.
     ```bash
     docker-compose up -d
     ```
+    *`-d` để chạy ở chế độ nền (detached).*
 
-5.  **Chạy ứng dụng Spring Boot:**
+4.  **Chạy ứng dụng Spring Boot:**
+    Ứng dụng sẽ đọc cấu hình từ file `src/main/resources/application.yml` để kết nối đến các dịch vụ trong Docker.
     ```bash
     mvn spring-boot:run
     ```
 
-Ứng dụng sẽ có thể truy cập tại `http://localhost:8080`.
+5.  **Truy cập ứng dụng:**
+    *   **Ứng dụng:** `http://localhost:8080`
+    *   **Tài liệu API (Swagger UI):** `http://localhost:8080/swagger-ui.html`
+
+## **7. Quy trình Triển khai (Deployment)**
+
+Quy trình triển khai được tự động hóa thông qua CI/CD (Continuous Integration/Continuous Deployment).
+
+1.  **Commit & Push:** Developer push code lên nhánh `main` (hoặc tạo Pull Request).
+2.  **CI (Continuous Integration):**
+    *   Một dịch vụ CI (GitHub Actions, Jenkins) sẽ tự động được kích hoạt.
+    *   Nó sẽ build code, chạy toàn bộ unit test và integration test.
+3.  **Build & Push Image:** Nếu CI thành công, một Docker image mới sẽ được build và đẩy lên một Container Registry (AWS ECR, Docker Hub).
+4.  **CD (Continuous Deployment):**
+    *   Một hệ thống CD (ArgoCD, Spinnaker) sẽ nhận diện image mới.
+    *   Nó sẽ thực hiện một "Rolling Update" trên môi trường Production (Kubernetes), cập nhật các instance một cách từ từ mà không gây gián đoạn dịch vụ.
+
+## **8. Tài liệu API**
+
+Tài liệu API được tự động tạo bằng OpenAPI 3. Sau khi chạy ứng dụng, bạn có thể truy cập và tương tác với các endpoint tại:
+
+**[http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)**

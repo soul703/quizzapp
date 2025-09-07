@@ -1,4 +1,3 @@
-Tuyệt vời! Dưới đây là phiên bản `README.md` hoàn chỉnh đã được cải tiến toàn diện. Tôi đã cấu trúc lại, bổ sung chi tiết, giải thích sâu hơn về lý do lựa chọn kỹ thuật, và làm cho nó trở thành một tài liệu kiến trúc thực thụ mà một Senior Engineer sẽ tự hào đưa vào dự án.
 
 ---
 
@@ -102,47 +101,73 @@ graph TD
     AppN <--> Storage
 ```
 
-## **4. Phân tích Sâu về Kiến trúc (Architectural Deep Dive)**
+---
 
-#### **CDN**
-*   **Vai trò:** Là cửa ngõ đầu tiên, phân phối nội dung tĩnh trên toàn cầu.
-*   **Lý do:**
-    *   **Tốc độ:** Cache các tài sản (assets) như CSS, JS, hình ảnh tại các vị trí gần người dùng, giảm độ trễ (latency) một cách đáng kể.
-    *   **Giảm tải:** Giảm hàng nghìn request không cần thiết đến server ứng dụng, giúp server tập trung vào việc xử lý logic động.
-    *   **Bảo mật:** Cung cấp lớp bảo vệ chống lại các cuộc tấn công DDoS cơ bản.
+### **4. Phân tích Sâu về Kiến trúc (Architectural Deep Dive)**
 
-#### **Load Balancer**
-*   **Vai trò:** "Cảnh sát giao thông" thông minh, phân phối request đến các instance ứng dụng.
-*   **Lý do:**
-    *   **Khả năng mở rộng ngang (Horizontal Scaling):** Cho phép chúng ta chạy nhiều bản sao của ứng dụng. Khi traffic tăng, chỉ cần thêm instance, Load Balancer sẽ tự động chia tải.
-    *   **Tính sẵn sàng cao (High Availability):** Tự động thực hiện "Health Check". Nếu một instance bị lỗi, nó sẽ bị loại khỏi pool và traffic được chuyển hướng đến các instance khỏe mạnh, đảm bảo hệ thống không bị gián đoạn.
+Tài liệu này trình bày một bản phân tích chi tiết về các quyết định thiết kế và lựa chọn công nghệ cho từng thành phần trong kiến trúc hệ thống QuizMaster. Mỗi thành phần được đánh giá dựa trên vai trò, lý do lựa chọn, và tác động của nó đến các mục tiêu kiến trúc tổng thể, bao gồm tính sẵn sàng cao, khả năng mở rộng, hiệu suất và an ninh.
 
-#### **Application Instances (Stateless Monolith)**
-*   **Vai trò:** "Bộ não" của hệ thống, chứa toàn bộ logic nghiệp vụ, được đóng gói trong Docker.
-*   **Lý do (Thiết kế Stateless):**
-    *   **Nguyên tắc Vàng để Scale:** Mỗi instance là độc lập và không lưu trữ bất kỳ trạng thái nào của người dùng (như session). Điều này cho phép Load Balancer gửi các request liên tiếp của cùng một người dùng đến các instance khác nhau mà không gây ra vấn đề.
-    *   **Tập trung hóa Trạng thái:** Toàn bộ trạng thái được đẩy ra các dịch vụ chuyên dụng: session được lưu trong Redis, file upload được lưu trên S3.
-    *   **Nhất quán & Dễ thay thế:** Mọi instance đều được tạo từ cùng một Docker image. Nếu một instance lỗi, nó có thể bị hủy và thay thế bằng một instance mới ngay lập tức.
+#### **4.1. Lớp Biên (Edge Layer): Mạng lưới Phân phối Nội dung (CDN)**
 
-#### **Database Cluster (Primary-Replica)**
-*   **Vai trò:** Trái tim lưu trữ dữ liệu, được tối ưu cho các workload đọc nhiều.
-*   **Lý do:**
-    *   **Tối ưu hóa Đọc/Ghi:** Hầu hết các ứng dụng web có tỷ lệ đọc cao hơn nhiều so với ghi. Mô hình này tách biệt hai loại workload.
-    *   **Primary (Master):** Chịu trách nhiệm cho tất cả các hoạt động **ghi** (INSERT, UPDATE, DELETE), đảm bảo tính toàn vẹn dữ liệu.
-    *   **Replica(s) (Slave):** Là các bản sao chỉ đọc, xử lý tất cả các hoạt động **đọc** (SELECT). Chúng ta có thể thêm nhiều replica để tăng khả năng đọc của hệ thống mà không ảnh hưởng đến hiệu suất ghi.
+*   **Mục đích & Vai trò Chiến lược:**
+    Lớp Biên là điểm tiếp cận đầu tiên và là tuyến phòng thủ vòng ngoài của hệ thống. Vai trò của nó không chỉ dừng lại ở việc tăng tốc độ mà còn là một thành phần quan trọng trong chiến lược bảo mật và giảm tải cho hạ tầng lõi (origin infrastructure).
 
-#### **Distributed Cache (Redis)**
-*   **Vai trò:** Bộ nhớ đệm tốc độ cao, giảm thiểu truy cập vào database.
-*   **Lý do:**
-    *   **Tăng tốc API:** Lưu trữ kết quả của các query tốn kém hoặc dữ liệu ít thay đổi (VD: chi tiết 1 bài quiz, bảng xếp hạng). Truy cập dữ liệu từ RAM nhanh hơn hàng chục lần so với từ disk của DB.
-    *   **Quản lý Session:** Là nơi lưu trữ session tập trung, một yêu cầu bắt buộc cho kiến trúc stateless.
+*   **Lựa chọn Công nghệ:** AWS CloudFront, tích hợp với AWS WAF & Shield.
+    *   **Lý do:** Lựa chọn này cung cấp một hệ sinh thái tích hợp chặt chẽ, cho phép quản lý tập trung việc phân phối nội dung, bảo vệ chống DDoS và lọc lưu lượng truy cập ở Lớp 7 thông qua một giao diện duy nhất. Mạng lưới toàn cầu của AWS đảm bảo độ trễ thấp cho người dùng trên toàn thế giới.
 
-#### **Object Storage (S3/MinIO)**
-*   **Vai trò:** Kho lưu trữ chuyên dụng cho các file nhị phân (ảnh, video, etc.).
-*   **Lý do:**
-    *   **Hiệu quả & Kinh tế:** Rẻ và hiệu quả hơn nhiều so với việc lưu trữ file lớn dưới dạng BLOB trong database hoặc trên hệ thống file của server.
-    *   **Độ bền cao & Dễ tích hợp:** Các dịch vụ này được thiết kế để đảm bảo dữ liệu không bị mất và cung cấp API dễ dàng để upload/download.
+*   **Lý giải Kỹ thuật & Tác động:**
+    1.  **Tối ưu hóa Hiệu suất Truyền tải:** Bằng việc lưu trữ (cache) các tài sản tĩnh (CSS, JavaScript, hình ảnh) tại các máy chủ biên (Edge Locations), CDN giảm đáng kể khoảng cách vật lý giữa dữ liệu và người dùng cuối. Điều này trực tiếp cải thiện các chỉ số hiệu suất quan trọng như Time to First Byte (TTFB), giúp trang web tải nhanh hơn và nâng cao trải nghiệm người dùng.
+    2.  **Giảm tải cho Máy chủ Gốc (Origin Offloading):** Một phần lớn lưu lượng truy cập vào hệ thống là các yêu cầu lặp đi lặp lại cho các tài sản tĩnh. CDN xử lý các yêu cầu này tại biên, ngăn chúng tiếp cận lớp ứng dụng. Việc "dỡ tải" này cho phép các máy chủ ứng dụng quý giá dành tài nguyên CPU, bộ nhớ và băng thông mạng để xử lý các logic nghiệp vụ động, qua đó tăng năng lực xử lý giao dịch thực tế của toàn hệ thống.
+    3.  **Tăng cường Vành đai An ninh (Security Perimeter Enhancement):** Tích hợp với AWS Shield cung cấp khả năng bảo vệ tự động, luôn bật chống lại các cuộc tấn công DDoS phổ biến ở Lớp 3 và Lớp 4. Tích hợp với AWS WAF cho phép định nghĩa các quy tắc để lọc và chặn các cuộc tấn công ở Lớp 7, chẳng hạn như SQL injection và Cross-Site Scripting (XSS), trước khi chúng có cơ hội khai thác lỗ hổng của ứng dụng.
 
+*   **Cân nhắc Vận hành:**
+    Cần xây dựng một chiến lược vô hiệu hóa cache (Cache Invalidation Strategy) rõ ràng. Việc triển khai các phiên bản mới của frontend đòi hỏi phải có cơ chế tự động để xóa cache của các tệp tin đã thay đổi trên CDN, đảm bảo người dùng không gặp phải các lỗi do sử dụng phiên bản cũ.
+
+#### **4.2. Lớp Phân phối Tải (Distribution Layer): Bộ Cân bằng Tải Ứng dụng**
+
+*   **Mục đích & Vai trò Chiến lược:**
+    Đây là thành phần trung tâm điều phối và phân phối lưu lượng truy cập một cách thông minh và linh hoạt đến các máy chủ ứng dụng. Nó không chỉ là một bộ chia tải đơn thuần mà còn là một công cụ đảm bảo tính sẵn sàng và đàn hồi của hệ thống.
+
+*   **Lựa chọn Công nghệ:** AWS Application Load Balancer (ALB).
+    *   **Lý do:** ALB là một dịch vụ cân bằng tải Lớp 7 được quản lý, có khả năng định tuyến dựa trên nội dung (content-based routing) như đường dẫn URL hoặc tên miền phụ. Quan trọng hơn, nó tích hợp sâu với các dịch vụ cốt lõi khác của AWS như Auto Scaling Groups và Certificate Manager, đơn giản hóa đáng kể việc vận hành.
+
+*   **Lý giải Kỹ thuật & Tác động:**
+    1.  **Đảm bảo Tính sẵn sàng Cao (High Availability):** ALB liên tục thực hiện các kiểm tra sức khỏe (Health Checks) tới các instance ứng dụng theo một tần suất và ngưỡng được định cấu hình. Nếu một instance không vượt qua kiểm tra (ví dụ: do ứng dụng bị treo, server quá tải), ALB sẽ ngay lập tức ngừng gửi lưu lượng truy cập mới đến nó và định tuyến lại cho các instance còn lại. Cơ chế này loại bỏ điểm lỗi đơn (Single Point of Failure) ở lớp ứng dụng và cho phép hệ thống tự động phục hồi sau sự cố cục bộ.
+    2.  **Kích hoạt Khả năng Mở rộng Đàn hồi (Elastic Scalability Enabler):** ALB là điều kiện tiên quyết cho việc mở rộng theo chiều ngang. Khi được kết hợp với Auto Scaling Groups, hệ thống có thể tự động thêm (scale-out) hoặc bớt (scale-in) các instance ứng dụng dựa trên các chỉ số thời gian thực như tải CPU hoặc số lượng request. ALB sẽ tự động đăng ký các instance mới và bắt đầu phân phối tải cho chúng, giúp hệ thống thích ứng linh hoạt với sự biến động của lưu lượng truy cập.
+    3.  **Tối ưu hóa Xử lý Mã hóa (SSL/TLS Termination):** ALB đảm nhận nhiệm vụ giải mã lưu lượng HTTPS (một quá trình tiêu tốn nhiều CPU) trước khi chuyển tiếp yêu cầu đến các instance ứng dụng dưới dạng HTTP không mã hóa trong một mạng riêng ảo an toàn (VPC). Điều này giải phóng tài nguyên tính toán trên các máy chủ ứng dụng, cho phép chúng tập trung hoàn toàn vào việc thực thi logic nghiệp vụ.
+
+#### **4.3. Lớp Ứng dụng (Application Layer): Nền tảng Monolith Phi trạng thái**
+
+*   **Mục đích & Vai trò Chiến lược:**
+    Đây là "bộ não" của hệ thống, nơi thực thi toàn bộ logic nghiệp vụ. Kiến trúc của lớp này được thiết kế để trở thành một khối đơn vị (monolith) nhất quán, nhưng có thể nhân bản và thay thế (disposable), tuân thủ nguyên tắc phi trạng thái (statelessness).
+
+*   **Lựa chọn Công nghệ:** Ứng dụng Spring Boot, được container hóa bằng Docker và điều phối bởi Kubernetes (hoặc AWS ECS).
+
+*   **Lý giải Kỹ thuật & Tác động:**
+    1.  **Thiết kế Phi trạng thái (Stateless Design):** Đây là nguyên tắc kiến trúc nền tảng. Mỗi instance ứng dụng là hoàn toàn độc lập và không lưu trữ bất kỳ dữ liệu phiên (session) hoặc dữ liệu cụ thể nào của người dùng. Mọi trạng thái cần thiết đều được ngoại vi hóa (externalized) sang các dịch vụ chuyên dụng như Redis (cho session) và S3 (cho file). Triết lý này biến mỗi instance thành một "công nhân" có thể thay thế, cho phép hệ thống mở rộng, thu hẹp và tự phục hồi một cách liền mạch mà không làm mất dữ liệu của người dùng.
+    2.  **Container hóa với Docker (Immutable Infrastructure):** Ứng dụng và toàn bộ môi trường chạy của nó được đóng gói vào một Docker image không thể thay đổi (immutable). Image này trở thành một "đóng dấu vàng" (golden stamp), đảm bảo tính nhất quán tuyệt đối giữa môi trường phát triển, kiểm thử và sản phẩm. Nó loại bỏ rủi ro do sự khác biệt về cấu hình môi trường và đơn giản hóa quy trình triển khai thành một hành động nguyên tử: chạy một container từ một image đã được xác minh.
+    3.  **Điều phối Động (Dynamic Orchestration):** Các nền tảng như Kubernetes tự động hóa vòng đời của các container. Nó không chỉ khởi chạy chúng mà còn quản lý mạng lưới, giám sát sức khỏe, tự động khởi động lại các container bị lỗi (self-healing), và thực hiện các chiến lược triển khai phức tạp như Rolling Updates (cập nhật dần dần từng instance để không gây gián đoạn dịch vụ) và Canary Deployments (triển khai cho một nhóm nhỏ người dùng trước).
+
+#### **4.4. Lớp Dữ liệu (Data Layer): Kho lưu trữ Đa mô hình Chuyên dụng**
+
+*   **Mục đích & Vai trò Chiến lược:**
+    Lớp dữ liệu được thiết kế theo nguyên tắc "chọn công cụ phù hợp cho từng công việc", tránh sử dụng một giải pháp duy nhất cho mọi loại dữ liệu. Nó bao gồm nhiều hệ thống lưu trữ khác nhau, mỗi hệ thống được tối ưu hóa cho một loại workload cụ thể.
+
+*   **Phân tích Chi tiết các Thành phần:**
+
+    1.  **Cơ sở dữ liệu Quan hệ (PostgreSQL - Primary/Replica):**
+        *   **Vai trò:** Là nguồn chân lý (Source of Truth) cho các dữ liệu giao dịch có cấu trúc cao, đòi hỏi tính nhất quán ACID (Atomicity, Consistency, Isolation, Durability).
+        *   **Kiến trúc:** Mô hình Primary-Replica được triển khai để giải quyết bài toán workload đọc-nhiều. Primary instance xử lý tất cả các hoạt động ghi, đảm bảo tính nhất quán mạnh mẽ. Các Replica instance được đồng bộ hóa không đồng bộ (asynchronously) từ Primary và chỉ phục vụ các truy vấn đọc. Kiến trúc này cho phép scale khả năng đọc của hệ thống một cách độc lập bằng cách thêm các replica mới, qua đó bảo vệ hiệu suất của các giao dịch ghi quan trọng.
+
+    2.  **Bộ nhớ đệm Phân tán (Redis):**
+        *   **Vai trò:** Là một kho lưu trữ key-value trong bộ nhớ, cung cấp khả năng truy cập dữ liệu với độ trễ cực thấp (sub-millisecond).
+        *   **Ứng dụng:**
+            a. **Kho lưu trữ Session (Session Store):** Hỗ trợ kiến trúc stateless của lớp ứng dụng bằng cách cung cấp một nơi tập trung, nhanh chóng để lưu trữ và truy xuất thông tin phiên đăng nhập.
+            b. **Bộ đệm Đa cấp (Multi-level Caching):** Giảm tải trực tiếp cho CSDL bằng cách cache các đối tượng dữ liệu được truy cập thường xuyên hoặc kết quả của các truy vấn tốn kém. Việc này tạo ra một "đường tắt" hiệu suất cao, giúp cải thiện đáng kể thời gian phản hồi của API và giảm chi phí vận hành CSDL.
+
+    3.  **Lưu trữ Đối tượng (AWS S3):**
+        *   **Vai trò:** Kho lưu trữ bền vững, có khả năng mở rộng gần như vô hạn cho các dữ liệu nhị phân không có cấu trúc (BLOBs - Binary Large Objects).
+        *   **Lý giải:** Việc lưu trữ các tệp tin (hình ảnh, video) trực tiếp trong CSDL quan hệ là một anti-pattern vì nó làm tăng nhanh kích thước CSDL, phức tạp hóa việc sao lưu/phục hồi, và làm giảm hiệu suất chung. S3 được thiết kế chuyên biệt cho mục đích này, cung cấp độ bền dữ liệu lên tới 99.999999999% (11 số 9), chi phí lưu trữ thấp và băng thông truy cập cao.
 ## **5. Lý giải Lựa chọn Thiết kế: Tại sao lại là Monolith?**
 
 Trong thế giới tôn vinh Microservices, việc lựa chọn Monolith là một quyết định kỹ thuật có chủ đích, đặc biệt phù hợp cho giai đoạn đầu và giữa của dự án.

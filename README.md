@@ -1,6 +1,3 @@
-Chắc chắn rồi. Dưới đây là một file `README.md` hoàn chỉnh, chi tiết theo đúng chuẩn của một dự án chuyên nghiệp. File này không chỉ mô tả dự án mà còn là một tài liệu kiến trúc, hướng dẫn cho bất kỳ developer nào tham gia vào team.
-
----
 
 # **Quiz App - Kiến trúc Monolith Hiệu suất cao & Dễ mở rộng**
 
@@ -34,38 +31,39 @@ Dự án này là một ứng dụng Web Quiz được xây dựng bằng Java v
 
 Kiến trúc này được thiết kế để xử lý lượng truy cập lớn và đảm bảo hệ thống không có điểm lỗi đơn (Single Point of Failure).
 
-```mermaid
 graph TD
     subgraph "Internet"
-        User[<i class='fa fa-user'></i> Người dùng]
+        %% Sử dụng ký tự Unicode để biểu diễn icon người dùng
+        User["👤 User"]
     end
 
     subgraph "Edge Network"
-        CDN[<i class='fa fa-cloud'></i> CDN <br> (Cloudflare / CloudFront)]
+        %% Sử dụng ký tự Unicode và xuống dòng bằng cách đặt text trong dấu ""
+        CDN["☁️ CDN<br>(Cloudflare / CloudFront)"]
     end
 
     subgraph "Cloud Infrastructure (AWS, GCP, Azure)"
-        LB[<i class='fa fa-server'></i> Load Balancer <br> (AWS ALB / Nginx)]
+        LB["↔️ Load Balancer<br>(AWS ALB / Nginx)"]
 
         subgraph "Application Auto-Scaling Group"
-            App1[<i class='fa fa-cogs'></i> App Instance 1 <br> (Docker Container)]
-            App2[<i class='fa fa-cogs'></i> App Instance 2 <br> (Docker Container)]
-            AppN[<i class='fa fa-ellipsis-h'></i> App Instance N <br> (Docker Container)]
+            App1["⚙️ App Instance 1<br>(Docker Container)"]
+            App2["⚙️ App Instance 2<br>(Docker Container)"]
+            AppN["... App Instance N<br>(Docker Container)"]
         end
 
         subgraph "Data Tier"
-            Cache[<i class='fa fa-bolt'></i> Distributed Cache <br> (Redis)]
-            DB_Primary[<i class='fa fa-database'></i> PostgreSQL Primary <br> (Read/Write)]
-            DB_Replica[<i class='fa fa-database'></i> PostgreSQL Replica <br> (Read-Only)]
-            Storage[<i class='fa fa-archive'></i> Object Storage <br> (AWS S3 / MinIO)]
+            Cache["⚡ Distributed Cache<br>(Redis)"]
+            DB_Primary["🗃️ PostgreSQL Primary<br>(Read/Write)"]
+            DB_Replica["📋 PostgreSQL Replica<br>(Read-Only)"]
+            Storage["📦 Object Storage<br>(AWS S3 / MinIO)"]
         end
     end
 
     User -- HTTPS --> CDN
     CDN -- HTTPS --> LB
-    LB -- Phân phối traffic --> App1
-    LB -- Phân phối traffic --> App2
-    LB -- Phân phối traffic --> AppN
+    LB -- Distributes Traffic --> App1
+    LB -- Distributes Traffic --> App2
+    LB -- Distributes Traffic --> AppN
 
     App1 <--> Cache
     App2 <--> Cache
@@ -84,7 +82,6 @@ graph TD
     App1 <--> Storage
     App2 <--> Storage
     AppN <--> Storage
-```
 
 ## **3. Phân tích Chi tiết các Thành phần Kiến trúc**
 

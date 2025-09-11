@@ -5,10 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="959307b0-ce80-48d4-9592-16ac74b6517d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/README_databse.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bootstrap/src/main/java/com/example/quizzapp/QuizzAppApplication.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README_quiz-management.md" beforeDir="false" afterPath="$PROJECT_DIR$/README_quiz-management.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bootstrap/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/bootstrap/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/infrastructure/src/test/java/org/example/infrastructure/InfrastructureApplicationTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/infrastructure/src/test/java/com/example/quizzapp/domain/InfrastructureApplicationTests.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,28 +29,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Maven.quizz-app [clean,install].executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "Spring Boot.Application.executor": "Run",
-    "Spring Boot.BootstrapApplication.executor": "Run",
-    "Spring Boot.DomainApplication.executor": "Run",
-    "Spring Boot.InfrastructureApplication.executor": "Run",
-    "Spring Boot.QuizzAppApplication.executor": "Run",
-    "git-widget-placeholder": "main",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.configurations.included.in.services": "true",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Maven.quizz-app [clean,install].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.Application.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.BootstrapApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.DomainApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.InfrastructureApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.QuizzAppApplication.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature/issue-2-init-project&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.configurations.included.in.services&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\buima\OneDrive\Máy tính\quizzapp" />
@@ -128,7 +127,7 @@
       <updated>1757559236256</updated>
       <workItem from="1757559237456" duration="286000" />
       <workItem from="1757559542828" duration="181000" />
-      <workItem from="1757559791832" duration="7625000" />
+      <workItem from="1757559791832" duration="9759000" />
     </task>
     <servers />
   </component>

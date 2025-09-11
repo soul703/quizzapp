@@ -39,7 +39,7 @@ skinparam packageStyle rectangle
 
 package "Question Bank Context" <<Cloud>> {
   
-  aggregate Question <<(A, #90EE90)>> {
+  class Question <<Aggregate>> {
     + id: QuestionId
     + ownerId: TeacherId
     + visibility: Visibility
@@ -52,16 +52,16 @@ package "Question Bank Context" <<Cloud>> {
     + validate()
   }
 
-  class Option <<(V, #FFDDC1)>> {
+  class Option <<ValueObject>> {
     + optionId: UUID
     + text: String
   }
 
-  class Answer <<(V, #FFDDC1)>> {
+  class Answer <<ValueObject>> {
     + correctOptionIds: Set<UUID>
   }
 
-  class QuestionMetadata <<(V, #FFDDC1)>> {
+  class QuestionMetadata <<ValueObject>> {
     + subject: String
     + tags: Set<String>
     + difficulty: DifficultyLevel
@@ -78,6 +78,7 @@ package "Question Bank Context" <<Cloud>> {
   Question *-- "1" QuestionMetadata : describes
 }
 @enduml
+
 ```
 
 -   **`Question` (Aggregate Root):** The core object. It ensures that any changes maintain a valid state.
@@ -107,14 +108,14 @@ skinparam packageStyle rectangle
 
 ' Define Question from the other context to show the relationship
 package "Question Bank Context" <<Cloud>> {
-  aggregate Question <<(A, #90EE90)>> {
+  class Question <<Aggregate>> {
     + id: QuestionId
   }
 }
 
 package "Quiz Authoring Context" <<Cloud>> {
   
-  aggregate Quiz <<(A, #90EE90)>> {
+  class Quiz <<Aggregate>> {
     + id: QuizId
     + ownerId: TeacherId
     + title: String
@@ -126,11 +127,11 @@ package "Quiz Authoring Context" <<Cloud>> {
     + archive()
   }
 
-  class QuizQuestionEntry <<(V, #FFDDC1)>> {
+  class QuizQuestionEntry <<ValueObject>> {
     + questionId: QuestionId
   }
 
-  class QuizQuestionSettings <<(V, #FFDDC1)>> {
+  class QuizQuestionSettings <<ValueObject>> {
     + timeLimitInSeconds: Integer
     + points: Integer
   }
@@ -145,9 +146,10 @@ package "Quiz Authoring Context" <<Cloud>> {
   QuizQuestionEntry *-- "1" QuizQuestionSettings : has
 }
 
-' Relationship between contexts
-QuizQuestionEntry::questionId ..> Question::id : "references"
+' Relationship between contexts (only class-to-class)
+QuizQuestionEntry ..> Question : "references by questionId"
 @enduml
+
 ```
 
 -   **`Quiz` (Aggregate Root):** Manages the collection of question entries and the quiz's overall state.

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- 1. Kế thừa từ project cha của chúng ta, không phải Spring Boot -->
+	<parent>
+		<groupId>com.example</groupId>
+		<artifactId>quizz-app</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<!-- Chỉ cần định nghĩa artifactId, các thông tin khác được kế thừa -->
+	<artifactId>domain</artifactId>
+	<packaging>jar</packaging>
+
+	<dependencies>
+		<!-- 2. Chỉ chứa các dependency tối thiểu, không dính dáng đến framework nặng -->
+
+		<!-- Cần thiết nếu sử dụng AbstractAggregateRoot để quản lý Domain Events -->
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons</artifactId>
+		</dependency>
+
+		<!-- Tiện ích để giảm code boilerplate -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- Dependency cho việc viết Unit Test (không cần toàn bộ Spring Test) -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<!-- 3. Không có section <build> với spring-boot-maven-plugin -->
+
+</project>

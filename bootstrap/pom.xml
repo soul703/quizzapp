@@ -21,12 +21,26 @@
 			<artifactId>infrastructure</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>com.example</groupId>
+			<artifactId>common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.example</groupId>
+			<artifactId>application</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- 2.1. Các dependency "cấp cao" để chạy ứng dụng -->
 		<!-- Cung cấp Tomcat, Spring MVC, REST Controllers -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<!-- Cung cấp tính năng Validation API và kích hoạt tại tầng Web -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 
 		<!-- Cung cấp Spring Security và các filter bảo vệ endpoint -->

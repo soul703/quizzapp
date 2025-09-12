@@ -2,12 +2,14 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
       <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="bootstrap" />
         <module name="application" />
+        <module name="common" />
         <module name="infrastructure" />
         <module name="domain" />
       </profile>
@@ -17,6 +19,9 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="application" options="-parameters" />
       <module name="bootstrap" options="-parameters" />
+      <module name="common" options="-parameters" />
+      <module name="common.main" options="-parameters" />
+      <module name="common.test" options="-parameters" />
       <module name="domain" options="-parameters" />
       <module name="infrastructure" options="-parameters" />
     </option>

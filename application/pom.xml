@@ -20,7 +20,11 @@
 			<artifactId>domain</artifactId>
 			<version>${project.version}</version> <!-- Luôn dùng version của project cha -->
 		</dependency>
-
+		<dependency>
+			<groupId>com.example</groupId>
+			<artifactId>common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- 2.1. Các dependency tối thiểu của Spring Framework -->
 		<!-- Cung cấp @Service, @Component, ApplicationContext, etc. -->
 		<dependency>
@@ -51,6 +55,16 @@
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<!-- Cung cấp các annotation validation API (e.g., @NotBlank, @Email) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<!-- Cung cấp các class cần thiết cho việc mã hóa, ví dụ: PasswordEncoder -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-crypto</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
